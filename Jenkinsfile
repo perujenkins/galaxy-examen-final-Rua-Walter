@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 pipeline {
     agent any
     environment {
@@ -168,4 +167,3 @@ pipeline {
             }
         }
     }
->>>>>>> 02e17f817623453d0a4329015ed450f4ca735142
