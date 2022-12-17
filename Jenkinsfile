@@ -3,29 +3,31 @@ pipeline {
     environment {
         DOCKER_CREDS = credentials('docker-credentials')
         }
-        stages {
-            stage('Build') {
-                agent {
-                    docker { image 'maven:3.6.3-openjdk-11-slim' }
-                }
-                steps {
-                    sh 'mvn package'
-                }
-                post{
-                    success {
-                        archiveArtifacts artifacts: 'target/labmaven-*.jar', fingerprint: true, onlyIfSuccessful: true
-                    }
+    stages {
+        stage('Build') {
+            agent {
+                docker { image 'maven:3.6.3-openjdk-11-slim' }
+            }
+            steps {
+                sh 'mvn package'
+                sh 'echo "Listar RUTA"'
+                sh 'ls -l target/'
+            }
+            post{
+                success {
+                    archiveArtifacts artifacts: 'target/labmaven-*.jar', fingerprint: true, onlyIfSuccessful: true
                 }
             }
-            stage('SonarQube') {
-                agent {
-                    docker { image 'maven:3.6.3-openjdk-11-slim' }
-                }
-                steps {
-                    script{
-                         def scannerHome = tool 'scanner-default';
-                         withSonarQubeEnv('sonar-server') {
-                          sh "${scannerHome}/bin/sonar-scanner \
+        }
+        stage('SonarQube') {
+            agent {
+                docker { image 'maven:3.6.3-openjdk-11-slim' }
+            }
+            steps {
+                script{
+                    def scannerHome = tool 'scanner-default';
+                    withSonarQubeEnv('sonar-server') {
+                        sh "${scannerHome}/bin/sonar-scanner \
                             -Dsonar.projectKey=labmaven \
                             -Dsonar.projectName=labmaven \
                             -Dsonar.sources=src/main \
@@ -71,16 +73,12 @@ pipeline {
                 steps {
                     script {
                         sh 'docker login -u ${DOCKER_CREDS_USR} -p ${DOCKER_CREDS_PSW}'
-                        sh 'docker rm galaxyExamen -f'
-                        sh 'docker run -d -p 8080:8080 --name galaxyExamen ${DOCKER_CREDS_USR}/msmicroservice:$BUILD_NUMBER'
-                        //sh 'docker run -d -p 8600:8080 ${DOCKER_CREDS_USR}/msmicroservice:$BUILD_NUMBER'
+                        sh 'docker rm galaxyLab -f'
+                        sh 'docker run -d -p 8080:8080 --name galaxyLab ${DOCKER_CREDS_USR}/msmicroservice:$BUILD_NUMBER'
+                        //sh 'docker run -d -p 8080:8080 ${DOCKER_CREDS_USR}/msmicroservice:$BUILD_NUMBER'
                         sh 'docker logout'
                     }
                 }
             }
-           
         }
-}
-
-//plugins
-//Copy ArtifactVersion
+    }
